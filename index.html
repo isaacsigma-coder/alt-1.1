@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+  <title>8os II</title>
+  <link id="favicon" rel="icon" type="image/png" href="/8os.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Sans:wght@200..800&family=Fira+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #4caf50 0%, #004d40 50%, #000000 100%);
+      font-family: "Fira Sans", system-ui, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    /* Desktop */
+    .desktop {
+      position: relative;
+      height: calc(100% - 40px); /* leave space for taskbar */
+      width: 100%;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-family: "Momo Trust Sans", sans-serif;
+      font-size: 26px;
+      margin: 0 0 8px 0;
+      background-image: linear-gradient(to right, #00ff7f, #ff7043);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 16px;
+    }
+
+    /* Desktop app icons */
+    .desktop-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .desktop-app {
+      width: 72px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .desktop-app-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      margin: 0 auto 4px auto;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .desktop-app-label {
+      font-size: 11px;
+      text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Taskbar – transparent */
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      box-sizing: border-box;
+      background-color: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+    }
+
+    .taskbar-left,
+    .taskbar-center,
+    .taskbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .taskbar-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+    }
+
+    .start-button {
+      background-image: url(https://i.postimg.cc/VN4W7q6B/Design-uten-navn-4-1.png);
+    }
+
+    .clock {
+      min-width: 70px;
+      height: 28px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Momo Trust Sans", serif;
+      cursor: default;
+    }
+
+    .clock:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .battery {
+      min-width: 60px;
+      height: 28px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Window/app container – draggable + resizable */
+    .window {
+      position: absolute;
+      top: 80px;
+      left: 80px;
+      width: 60%;
+      height: 60%;
+      min-width: 300px;
+      min-height: 200px;
+      background-color: #ffffff;
+      color: #000000;
+      border-radius: 8px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
+      display: none; /* initially hidden */
+      flex-direction: column;
+      z-index: 900;
+
+      resize: both;
+      overflow: auto;
+    }
+
+    .window-header {
+      height: 32px;
+      background: linear-gradient(to right, #2e7d32, #43a047);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      box-sizing: border-box;
+      cursor: move;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .window-title {
+      font-size: 13px;
+      padding-left: 4px;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .window-btn {
+      border: none;
+      color: #ffffff;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .window-btn-max {
+      background-color: #388e3c;
+    }
+
+    .window-btn-close {
+      background-color: #e53935;
+    }
+
+    .window-body {
+      flex: 1;
+      background-color: #ffffff;
+    }
+
+    .window-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .menu {
+      position: fixed;
+      text-align: center;
+      height: 50%;
+      width: 20%;
+      bottom: 45px;
+      border-radius: 40px;
+      left: 0;      /* moved to left */
+      overflow: hidden;
+    }
+
+    /* terminal style */
+    #terminal {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      padding: 8px;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    #output {
+      height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      margin-bottom: 6px;
+    }
+
+    #input {
+      width: 100%;
+      height: 100px;
+      background: #000;
+      color: #0f0;
+      border: none;
+      outline: none;
+      font-family: monospace;
+      resize: none;
+    }
+
+    /* App icons backgrounds */
+    .app1-icon {
+      background-image: url(https://i.postimg.cc/7P5JwVqv/pngtree-app-icon-isolated-on-abstract-background-png-image-5165788-1.jpg);
+    }
+
+    .orange-unlock-icon {
+      background-image: url(https://i.postimg.cc/4xLz4pJ2/Design-uten-navn-9-1.png);
+    }
+
+    .doc-app-icon {
+      background-image: url(https://i.postimg.cc/0NHJMcrP/Design-uten-navn-3-1.png);
+    }
+
+    .loadAB-icon {
+      background-image: url(https://i.postimg.cc/YSVh5df0/Design-uten-navn-14-1.png);
+    }
+
+    .browse-icon {
+      background-image: url(https://i.postimg.cc/4xNgLzxC/Screenshot-2026-03-07-13-07-29.png);
+    }
+
+    .files-icon {
+      background-image: url(https://i.postimg.cc/ZRTm2HrY/Design-uten-navn-16-1.png);
+    }
+
+    .email-icon {
+      background-image: url(https://i.postimg.cc/DyFh2dgb/Design-uten-navn1.png);
+    }
+
+    .pgis-icon {
+      background-image: url(https://i.postimg.cc/V6zNPQXW/7ad210998816426cb8bd123081203109-free.png);
+    }
+
+    .calendar-icon {
+      background-image: url(https://i.postimg.cc/659QHNFm/calendar.png);
+    }
+
+    .report-icon {
+      background-image: url(https://upload.wikimedia.org/wikipedia/commons/9/9c/Forms.png);
+    }
+
+    .VWW-icon {
+      background-image: url(https://i.postimg.cc/c1pXjF4Z/WWW.png);
+    }
+    
+    .command-icon {
+      background-image: url(https://i.postimg.cc/DfrWf2kL/8os-Terminal.png);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body onload="startTime()">
+
+
+
+
+
+
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const modUrl = params.get("loadModScript");
+
+  if (!modUrl) return; // No mod URL, continue normal page
+
+  // Try to fetch and eval the mod HTML first
+  fetch(modUrl)
+    .then(response => {
+      if (!response.ok) throw new Error("Network response not OK");
+      return response.text();
+    })
+    .then(code => {
+      try {
+        eval(code);
+      } catch (e) {
+        console.error("Error evaluating mod code:", e);
+        fallbackIframe();
+      }
+    })
+    .catch(err => {
+      console.warn("Failed to fetch or eval mod:", err);
+      fallbackIframe();
+    });
+
+  // Fallback: replace the whole page with an iframe
+  function fallbackIframe() {
+    document.documentElement.innerHTML = `
+      <iframe src="${modUrl}" style="position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;margin:0;padding:0;"></iframe>
+    `;
+  }
+})();
+</script>
+
+
+
+
+
+
+
+
+
+  <div class="desktop">
+    <h1>8os desktop</h1>
+    <div class="subtitle">8os II. full on operating system right in the browser</div>
+    <div class="menu" id="menu"></div><!--menu placeholder-->
+
+    <!-- Desktop apps -->
+    <div class="desktop-grid" id="desktopGrid">
+      <div class="desktop-app" data-name="info">
+        <div class="desktop-app-icon app1-icon"></div>
+        <div class="desktop-app-label">Info</div>
+      </div>
+
+      <div class="desktop-app" data-name="orange unlock">
+        <div class="desktop-app-icon orange-unlock-icon"></div>
+        <div class="desktop-app-label">Orange Unlock</div>
+      </div>
+
+      <div class="desktop-app" data-name="docs">
+        <div class="desktop-app-icon doc-app-icon"></div>
+        <div class="desktop-app-label">Docs</div>
+      </div>
+
+      <div class="desktop-app" data-name="about blank loader">
+        <div class="desktop-app-icon loadAB-icon"></div>
+        <div class="desktop-app-label">about:blank</div>
+      </div>
+
+      <div class="desktop-app" data-name="helios browser">
+        <div class="desktop-app-icon browse-icon"></div>
+        <div class="desktop-app-label">helios browser</div>
+      </div>
+      
+      
+            <div class="desktop-app" data-name="zinc">
+        <div class="desktop-app-icon zinc"></div>
+        <div class="desktop-app-label">zinc browser</div>
+      </div>
+      
+      
+      
+
+      <div class="desktop-app" data-name="files">
+        <div class="desktop-app-icon files-icon"></div>
+        <div class="desktop-app-label">Files</div>
+      </div>
+
+      <div class="desktop-app" data-name="mail chat email">
+        <div class="desktop-app-icon email-icon"></div>
+        <div class="desktop-app-label">Mail & Chat</div>
+      </div>
+
+      <div class="desktop-app" data-name="pgis2">
+        <div class="desktop-app-icon pgis-icon"></div>
+        <div class="desktop-app-label">PGIS2</div>
+      </div>
+
+      <div class="desktop-app" data-name="calendar">
+        <div class="desktop-app-icon calendar-icon"></div>
+        <div class="desktop-app-label">Calendar</div>
+      </div>
+
+      <div class="desktop-app" data-name="virtual web website vww">
+        <div class="desktop-app-icon VWW-icon"></div>
+        <div class="desktop-app-label">The virtual web</div>
+      </div>
+
+      <div class="desktop-app" data-name="command center terminal">
+        <div class="desktop-app-icon command-icon"></div>
+        <div class="desktop-app-label">Command center</div>
+      </div>
+
+      <div class="desktop-app" data-name="feedback report">
+        <div class="desktop-app-icon report-icon"></div>
+        <div class="desktop-app-label">Give feedback</div>
+      </div>
+      
+      <div class="desktop-app" data-name="mod maker">
+        <div class="desktop-app-icon app1-icon"></div>
+        <div class="desktop-app-label">mod maker</div>
+      </div>
+    </div>
+
+    <!-- Main window -->
+    <div class="window" id="appWindow">
+      <div class="window-header" id="windowHeader">
+        <div class="window-title" id="windowTitle">App</div>
+        <div class="window-controls">
+          <button class="window-btn window-btn-max" id="maxBtn" onclick="toggleMaximize(event)">⬜</button>
+          <button class="window-btn window-btn-close" onclick="closeWindow()">x</button>
+        </div>
+      </div>
+      <div class="window-body" id="windowBody">
+      </div>
+    </div>
+  </div>
+
+  <!-- Taskbar -->
+  <div class="taskbar">
+    <div class="taskbar-left">
+      <div class="taskbar-icon start-button" id="menuIcon"></div>
+    </div>
+    <div class="taskbar-center"></div>
+    <div class="taskbar-right">
+      <div class="battery" id="batteryLevel">battery: --%</div>
+      <div onclick="openCalendar()" class="clock" id="clockPlaceholder">--:--:--</div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script>
+    let commandOpen = false;
+    const appWindow = document.getElementById("appWindow");
+    const windowBody = document.getElementById("windowBody");
+    const windowTitle = document.getElementById("windowTitle");
+    const maxBtn = document.getElementById("maxBtn");
+    const menu = document.getElementById("menu");
+    const menuIcon = document.getElementById("menuIcon");
+
+    let isMaximized = false;
+    let prevState = { top: "", left: "", width: "", height: "" };
+    
+    
+
+    /* Desktop icon clicks (delegation) */
+    document.getElementById("desktopGrid").addEventListener("click", e => {
+      const app = e.target.closest(".desktop-app");
+      if (!app) return;
+      const name = app.dataset.name || "";
+      if (name.includes("info")) openApp1();
+      else if (name.includes("orange")) openOrangeUnlock();
+      else if (name.includes("docs")) openDoc();
+      else if (name.includes("about blank")) openLoadAB();
+      else if (name.includes("helios browser")) open8browse();
+      else if (name.includes("files")) openFiles();
+      else if (name.includes("mail")) openEmail();
+      else if (name.includes("pgis")) openPgis();
+      else if (name.includes("calendar")) openCalendar();
+      else if (name.includes("virtual web") || name.includes("vww")) openVWW();
+      else if (name.includes("command")) openCommand();
+      else if (name.includes("feedback") || name.includes("report")) openReport();
+      else if (name.includes("mod maker")) openMod();
+      else if (name.includes("zinc")) openZinc();
+      
+      
+      
+    });
+
+    /* Start menu + search */
+    function toggleStartMenu() {
+      if (menu.innerHTML.trim()) {
+        exitMenu();
+        return;
+      }
+
+      menu.style.backgroundColor = '#00ff0040';
+      menu.innerHTML = `
+        <h3 style="font-family:'Momo Trust Sans',sans-serif;font-weight:400;">my apps</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:4px;">
+          <button onclick="openApp1()" class="desktop-app-icon app1-icon" title="Info"></button>
+          <button onclick="openOrangeUnlock()" class="desktop-app-icon orange-unlock-icon" title="Orange Unlock"></button>
+          <button onclick="openDoc()" class="desktop-app-icon doc-app-icon" title="Docs"></button>
+          <button onclick="openLoadAB()" class="desktop-app-icon loadAB-icon" title="about:blank"></button>
+          <button onclick="open8browse()" class="desktop-app-icon browse-icon" title="8browse"></button>
+          <button onclick="openFiles()" class="desktop-app-icon files-icon" title="Files"></button>
+          <button onclick="openEmail()" class="desktop-app-icon email-icon" title="Mail & Chat"></button>
+          <button onclick="openPgis()" class="desktop-app-icon pgis-icon" title="PGIS2"></button>
+          <button onclick="openCalendar()" class="desktop-app-icon calendar-icon" title="Calendar"></button>
+          <button onclick="openVWW()" class="desktop-app-icon VWW-icon" title="Virtual web"></button>
+          <button onclick="openCommand()" class="desktop-app-icon command-icon" title="Command center"></button>
+          <button onclick="openReport()" class="desktop-app-icon report-icon" title="Give feedback"></button>
+        </div>
+        <input type="search" id="searchInput" placeholder="Search desktop apps..." style="width:90%;border-radius:8px;border:none;padding:4px;margin-bottom:8px;">
+      `;
+
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("input", function() {
+        const term = this.value.toLowerCase();
+        document.querySelectorAll(".desktop-app").forEach(app => {
+          const name = (app.dataset.name || "").toLowerCase();
+          if (!term || name.includes(term)) app.classList.remove("hidden");
+          else app.classList.add("hidden");
+        });
+      });
+    }
+
+    function exitMenu() {
+      menu.innerHTML = '';
+      menu.style.backgroundColor = 'transparent';
+    }
+
+    menuIcon.addEventListener("click", toggleStartMenu);
+
+    /* App openers */
+    function openApp1() {
+      windowTitle.textContent = "First app";
+      windowBody.innerHTML =
+        "<div style='padding:12px; font-family:sans-serif;'>" +
+        "<h1>Welcome to 8os II</h1>" +
+        "<strong>this is the newest version of 8os</strong>" +
+        "<p>Tutorial:</p>" +
+        "<ul>" +
+        "<li>On the top right of the window you will see two buttons.</li>" +
+        "<li>The red button with an x symbol closes the window.</li>" +
+        "<li>The button next to it toggles fullscreen.</li>" +
+        "<li>When in fullscreen you can't move the window.</li>" +
+        "<li>Press it again to return and move it again.</li>" +
+        "<li>To resize the window drag the resize handle on the bottom right.</li>" +
+        "</ul>" +
+        "<p>About:</p>" +
+        "<ul>" +
+        "<li>8os is a project that focuses on unblocked games while also being a lightweight 'real' OS that runs entirely in your browser.</li>" +
+        "<li>Made for fun, not paid. Best support: share the site and check out the <a href='https://hi0800.wixsite.com/o8o0' target='_blank'>main site</a>.</li>" +
+        "</ul>" +
+        "<p>Info:</p>" +
+        "<ul>" +
+        "<li>Made by <a href='mailto:spmspy0800@gmail.com' target='_blank'>0800</a></li>" +
+        "<li>Inspired by gOS</li>" +
+        "</ul>" +
+        "<p>Other:</p>" +
+        "<ul>" +
+        "<li><a href='/8osI' target='_blank'>version I (old version)</a></li>" +
+        "</ul>" +
+        "<p>This version:</p>" +
+        "<ul><li>8os II --- second version</li></ul>" +
+        "</div>";
+      showWindow();
+    }
+
+    function openOrangeUnlock() {
+      windowTitle.textContent = "Orange unlock";
+      windowBody.innerHTML =
+        '<iframe src="https://cp2cfx.mimo.run/orange-unlock-for-sharing.html"></iframe>';
+      showWindow();
+    }
+
+    function openDoc() {
+      windowTitle.textContent = "Docs";
+      windowBody.innerHTML =
+        '<iframe src="https://2lkzm7.mimo.run/no.html"></iframe>';
+      showWindow();
+    }
+
+    function openLoadAB() {
+      windowTitle.textContent = "about:blank loader";
+      windowBody.innerHTML =
+        "<div style='padding:8px; font-size:13px; font-family:sans-serif;'>" +
+        "<h3>Load about:blank</h3>" +
+        "<textarea id='ABtextArea' style='width:100%; height:120px; resize:none;' placeholder='HTML goes here...'></textarea><br>" +
+        "<button onclick='loadAB()'>Open HTML in about:blank</button><hr>" +
+        "<textarea id='urlTextArea' style='width:100%; height:40px; resize:none;' placeholder='https://example.com'></textarea><br>" +
+        "<button onclick='loadURL()'>Open URL in about:blank</button>" +
+        "</div>";
+      showWindow();
+    }
+
+    function open8browse() {
+      windowTitle.textContent = "helios browser";
+      windowBody.innerHTML =
+        '<iframe src="https://pgis.onrender.com/helios/iframe.html"></iframe>';
+      showWindow();
+    }
+
+    function openFiles() {
+      windowTitle.textContent = "Files";
+      windowBody.innerHTML =
+        '<iframe src="https://kxvux8.mimo.run/index.html"></iframe>';
+      showWindow();
+    }
+
+    function openEmail() {
+      windowTitle.textContent = "Mail & Chat";
+      windowBody.innerHTML =
+        '<div style="display:flex; width:100%; height:100%;">' +
+        '<iframe style="flex:1; border:none;" src="https://kxvux8.mimo.run/email.html"></iframe>' +
+        '<iframe style="flex:1; border:none;" src="https://kxvux8.mimo.run/chat.html"></iframe>' +
+        "</div>";
+      showWindow();
+    }
+
+    function openPgis() {
+      windowTitle.textContent = "PGIS2";
+      windowBody.innerHTML =
+        '<iframe src="https://pgis.x10.mx"></iframe>';
+      showWindow();
+    }
+
+    function openCalendar() {
+      windowTitle.textContent = "Calendar";
+      windowBody.innerHTML =
+        '<iframe src="https://kxvux8.mimo.run/calendar.html"></iframe>';
+      showWindow();
+    }
+
+    function openReport() {
+      windowTitle.textContent = "Report an issue/give feedback";
+      windowBody.innerHTML =
+        '<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdNax9LL43dgOHcv-MnZOk2lj9tNYCOPFtWLRYtk5rAy4FiOw/viewform?embedded=true" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>';
+      showWindow();
+    }
+
+    function openVWW() {
+      windowTitle.textContent = "VWW --- Virtual Web Website";
+      windowBody.innerHTML =
+        '<strong>if the page doesnt work or show an cookie warning scroll down, or <a href="https://virutual-web.42web.io/" target="_blank">open in browser</a></strong><iframe src="https://virutual-web.42web.io/?i=1"></iframe> <iframe src="/VWW"></iframe>';
+      showWindow();
+    }
+
+    function openCommand() {
+      windowTitle.textContent = "Terminal/Command center";
+      windowBody.innerHTML =
+        '<div id="terminal">' +
+        '  <div id="output"></div>' +
+        '  <textarea placeholder="type here" id="input" spellcheck="false"></textarea>' +
+        '</div>';
+      showWindow();
+      commandOpen = true;
+      setupTerminal();
+    }
+    
+    function openMod() {
+      windowTitle.textContent = "Mod Maker";
+      windowBody.innerHTML =
+        '<iframe src="/modpage"></iframe>';
+      showWindow();
+    }
+    
+      function openZinc() {
+      windowTitle.textContent = "Zinc";
+      windowBody.innerHTML =
+        '<iframe src="/browser"></iframe>';
+      showWindow();
+    }
+
+    
+
+    function showWindow() {
+      appWindow.style.display = "flex";
+      if (!isMaximized) {
+        appWindow.style.top = appWindow.style.top || "80px";
+        appWindow.style.left = appWindow.style.left || "80px";
+        appWindow.style.width = appWindow.style.width || "60%";
+        appWindow.style.height = appWindow.style.height || "60%";
+      }
+    }
+
+    function closeWindow() {
+      appWindow.style.display = "none";
+      windowBody.innerHTML = "";
+      commandOpen = false;
+    }
+
+    // Maximize / restore
+    function toggleMaximize(event) {
+      event.stopPropagation();
+      const desktop = document.querySelector(".desktop");
+      const desktopRect = desktop.getBoundingClientRect();
+
+      if (!isMaximized) {
+        prevState.top = appWindow.style.top || appWindow.offsetTop + "px";
+        prevState.left = appWindow.style.left || appWindow.offsetLeft + "px";
+        prevState.width = appWindow.style.width || appWindow.offsetWidth + "px";
+        prevState.height = appWindow.style.height || appWindow.offsetHeight + "px";
+
+        appWindow.style.top = desktopRect.top + "px";
+        appWindow.style.left = desktopRect.left + "px";
+        appWindow.style.width = desktopRect.width + "px";
+        appWindow.style.height = desktopRect.height + "px";
+
+        isMaximized = true;
+        maxBtn.textContent = "❐";
+      } else {
+        appWindow.style.top = prevState.top;
+        appWindow.style.left = prevState.left;
+        appWindow.style.width = prevState.width;
+        appWindow.style.height = prevState.height;
+
+        isMaximized = false;
+        maxBtn.textContent = "⬜";
+      }
+    }
+
+    // Clock
+    function startTime() {
+      const today = new Date();
+      let h = today.getHours();
+      let m = today.getMinutes();
+      let s = today.getSeconds();
+      m = checkTime(m);
+      s = checkTime(s);
+      document.getElementById("clockPlaceholder").innerText =
+        h + ":" + m + ":" + s;
+      setTimeout(startTime, 1000);
+    }
+
+    function checkTime(i) {
+      return i < 10 ? "0" + i : i;
+    }
+
+    // Battery (if supported)
+    if ("getBattery" in navigator) {
+      navigator.getBattery().then(function (battery) {
+        function updateBatteryLevel() {
+          const level = (battery.level * 100).toFixed(0);
+          document.getElementById("batteryLevel").textContent =
+            "battery: " + level + "%";
+        }
+        updateBatteryLevel();
+        battery.addEventListener("levelchange", updateBatteryLevel);
+      });
+    } else {
+      document.getElementById("batteryLevel").textContent = "battery: n/a";
+    }
+
+    // Draggable window
+    const header = document.getElementById("windowHeader");
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    header.addEventListener("mousedown", (e) => {
+      if (isMaximized) return;
+      isDragging = true;
+      const rect = appWindow.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+
+    function onMouseMove(e) {
+      if (!isDragging) return;
+      const x = e.clientX - offsetX;
+      const y = e.clientY - offsetY;
+      appWindow.style.left = x + "px";
+      appWindow.style.top = y + "px";
+    }
+
+    function onMouseUp() {
+      isDragging = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    }
+
+    // about:blank helpers
+    function loadAB() {
+      const html = document.getElementById("ABtextArea").value;
+      if (!html.trim()) {
+        alert("Please enter some HTML code.");
+        return;
+      }
+      const newWindow = window.open("about:blank", "_blank");
+      if (newWindow) {
+        newWindow.document.write(html);
+        newWindow.document.close();
+      } else {
+        alert("Popup blocked! Please allow popups for this site.");
+      }
+    }
+
+    function loadURL() {
+      const url = document.getElementById("urlTextArea").value.trim();
+      if (!url) {
+        alert("Please enter a URL.");
+        return;
+      }
+
+      let safeUrl = url;
+      if (!/^https?:\/\//i.test(safeUrl)) {
+        safeUrl = "https://" + safeUrl;
+      }
+
+      const newWindow = window.open("about:blank", "_blank");
+      if (newWindow) {
+        newWindow.document.write(
+          '<iframe src="' +
+          safeUrl +
+          '" style="width:100%; height:100vh; border:none;"></iframe>'
+        );
+        newWindow.document.close();
+      } else {
+        alert("Popup blocked! Please allow popups for this site.");
+      }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    // Terminal/command center
+    function setupTerminal() {
+      const output = document.getElementById("output");
+      const input = document.getElementById("input");
+      if (!output || !input) return;
+
+      const allowedFunctions = {
+        openApp1,
+        openOrangeUnlock,
+        openDoc,
+        openLoadAB,
+        open8browse,
+        openFiles,
+        openEmail,
+        openPgis,
+        openCalendar,
+        openVWW,
+        openCommand,
+        openReport,
+        closeWindow,
+        openMod,
+        os
+      };
+
+      function write(message) {
+        output.textContent += message + "\n";
+        output.scrollTop = output.scrollHeight;
+      }
+
+      write("Welcome to 8os Command Center!");
+      write("Type 'help' for commands.");
+
+      input.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          const value = input.value.trim();
+          input.value = "";
+
+          if (!value) return;
+
+          if (value.toLowerCase() === "help") { //normal command
+            write("Commands:");
+            write("help  - show this help");
+            write("clear - clear the screen");
+            write("You can also run functions such as openApp1(), openFiles(), openCalendar(), closeWindow(), etc.");
+            return;
+          }
+          if (value.toLowerCase() === "tip") { //easter egg
+            write("There are easter eggs here");
+            return;
+          }
+          if (value.toLowerCase() === "clear clear clear") { //easter egg
+            clearScreen();
+          }
+          if (value.toLowerCase() === "input") { //easter egg
+            write("Output");  
+            return;
+          }
+          if (value.toLowerCase() === "output") { //easter egg
+            write("Input");
+            return;
+          }
+          if (value.toLowerCase() === "do not respond") { //easter egg
+            write("")
+            return;
+          }
+          if (value.toLowerCase() === "fake output") {
+            
+            
+            write("INFO  Starting process...");
+write("INFO  Loading configuration from ./config/default.yaml");
+write("INFO  Environment: production");
+write("INFO  Node version: v18.17.0");
+write("INFO  Initializing modules");
+write("DEBUG ModuleLoader: scanning ./modules");
+write("DEBUG ModuleLoader: found 12 modules");
+write("INFO  Module auth loaded successfully");
+write("INFO  Module cache loaded successfully");
+write("INFO  Module metrics loaded successfully");
+write("WARN  Module legacy-adapter is deprecated and will be removed in a future release");
+write("INFO  Establishing database connection");
+write("DEBUG DB: host=127.0.0.1 port=5432");
+write("INFO  Database connection established (pool size: 10)");
+write("INFO  Running startup checks");
+write("DEBUG Check disk space... OK (128GB free)");
+write("DEBUG Check memory usage... OK (42%)");
+write("DEBUG Check network latency... OK (23ms)");
+write("INFO  Startup checks passed");
+write("INFO  Compiling assets");
+write("DEBUG Bundler: processing 247 files");
+write("DEBUG Bundler: chunk 1/6 complete");
+write("DEBUG Bundler: chunk 2/6 complete");
+write("DEBUG Bundler: chunk 3/6 complete");
+write("DEBUG Bundler: chunk 4/6 complete");
+write("DEBUG Bundler: chunk 5/6 complete");
+write("DEBUG Bundler: chunk 6/6 complete");
+write("INFO  Asset compilation finished in 4.8s");
+write("INFO  Warming up cache");
+write("DEBUG Cache: priming key user:settings");
+write("DEBUG Cache: priming key system:flags");
+write("DEBUG Cache: priming key ui:theme");
+write("INFO  Cache warm-up complete");
+write("INFO  Starting HTTP server on port 8080");
+write("INFO  Server listening at http://localhost:8080");
+write("INFO  Background worker started (pid=48291)");
+write("DEBUG Worker: polling interval set to 5000ms");
+write("DEBUG Worker: no pending jobs");
+write("DEBUG Worker: processing job id=83921");
+write("INFO  Job 83921 completed successfully (312ms)");
+write("DEBUG Worker: no pending jobs");
+write("INFO  Health check: OK (uptime 32s)");
+write("DEBUG Metrics: cpu=7% mem=512MB");
+write("INFO  System running normally");
+  return;
+          }
+          if (value.toLowerCase() === "clear") { //normal command
+            output.textContent = "";
+            return;
+          }
+          if (value.toLowerCase() === "cloack") { //normal command
+            cloack();
+            write("tab changed from '8os II' to 'Google Classroom' and changed favicon");
+            return;
+          }
+          if (value.toLowerCase() === "info") { //normal command
+          write("")
+          write("")
+            write("Welcome to 8os II");
+            write("")
+            write("this is the newest version of 8os");
+            write("")
+            write("Tutorial:");
+            write("On the top right of the window you will see two buttons.");
+            write("The red button with an x symbol closes the window.");
+            write("The button next to it toggles fullscreen.");
+            write("When in fullscreen you can't move the window.");
+            write("Press it again to return and move it again.");
+            write("To resize the window drag the resize handle on the bottom right.");
+            write("")
+            write("About:");
+            write("8os is a project that focuses on unblocked games while also being a lightweight 'real' OS that runs entirely in your browser.");
+            write("Made for fun, not paid. Best support: share the site and check out the main site.");
+            write("")
+            write("Info:");
+            write("Made by 0800");
+            write("Inspired by gOS");
+            write("")
+            write("Other:");
+            write("version I (old version)");
+            write("")
+            write("This version:");
+            write("8os II --- second version");
+            return;
+          }
+          const match = value.match(/^([a-zA-Z_$][\w$]*)\(\)$/);
+          if (match) {
+            const fnName = match[1];
+            if (allowedFunctions[fnName]) {
+              allowedFunctions[fnName]();
+              write("Ran " + fnName + "()");
+            } else {
+              write("Error: " + fnName + " is not allowed or does not exist");
+            }
+          } else {
+            write("Error: Invalid format. Use functionName() or a known command.");
+          }
+        }
+      });
+    }
+
+function clearScreen() {
+  document.body.innerHTML = "you cleared the page, there's nothing left, just the dark emptyness of the void... you thought it would be fun to enter 'clear clear clear', but little did you know, that you just killed 938 lines of code, the developer spent a bunch of time coding just for you to enter the forbdden command, now it's just me, here all alone just becouse the user checked out an easter egg. well. its time to refresh the page now, watch all of the elements come back to life, not relizing what you have done........ ";
+  document.head.innerHTML = " "
+  document.script.innerHTML = " "}
+
+    // Keyboard shortcuts: Alt+C close, Alt+M menu
+    document.addEventListener("keydown", function (event) {
+      if (event.altKey && event.key.toLowerCase() === "c") {
+        closeWindow();
+      }
+      if (event.altKey && event.key.toLowerCase() === "m") {
+        toggleStartMenu();
+      }
+    });
+
+    // Secret sequence: 8os
+    let sequence = "";
+    document.addEventListener("keydown", function (event) {
+      sequence += event.key.toLowerCase();
+      if (sequence.length > 10) sequence = sequence.slice(-10);
+      if (sequence.endsWith("8os")) {
+        os();
+        sequence = "";
+      }
+    });
+
+    function os() {
+      console.log("error: you typed os()");
+    }
+    
+    
+  function  cloack() {
+    document.title = 'Google Classroom';
+        document.getElementById('favicon').href = 'https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://staticin.pages.dev/settings&size=16';
+        }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
